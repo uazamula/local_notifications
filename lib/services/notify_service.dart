@@ -3,9 +3,9 @@ import 'package:timezone/timezone.dart' as tz;
 // https://stackoverflow.com/questions/71690143/flutter-push-notification-when-app-is-closed
 // https://stackoverflow.com/questions/69014546/flutter-local-notification-sound-not-working
 class NotificationService {
-  final notificationsPlugin = FlutterLocalNotificationsPlugin();
+  static final notificationsPlugin = FlutterLocalNotificationsPlugin();
 
-  Future<void> initNotification() async {
+  static Future<void> initNotification() async {
     var initializationSettingsAndroid =
         const AndroidInitializationSettings('logo512circled');
     var initializationSettingsIOS = DarwinInitializationSettings(
@@ -34,20 +34,22 @@ class NotificationService {
   //       id, title, body, await notificationDetails());
   // }
 
-  notificationDetails() {
+  static notificationDetails() {
     return NotificationDetails(
       android: AndroidNotificationDetails(
-        'channelId',
-        'channelName',
+        'channelId13',
+        'channelName4',
         playSound: true,
-        sound: UriAndroidNotificationSound('assets/anthem.mp3'),
-        importance: Importance.high,
+        // sound: UriAndroidNotificationSound('assets/anthem.mp3'),
+        sound: RawResourceAndroidNotificationSound('anthem'),
+        importance: Importance.max,
+        priority: Priority.high,
       ),
       iOS: DarwinNotificationDetails(),
     );
   }
 
-  Future scheduleNotification({
+  static Future scheduleNotification({
     int id = 0,
     String? title,
     String? body,

@@ -8,7 +8,7 @@ DateTime scheduleTime = DateTime.now();
 
 Future main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  NotificationService().initNotification();
+  NotificationService.initNotification();
   tz.initializeTimeZones();
   runApp(const MyApp());
 }
@@ -115,7 +115,7 @@ class ScheduleBtn extends StatelessWidget {
     return ElevatedButton(
         onPressed: () {
           debugPrint('Notification scheduled for $scheduleTime');
-          NotificationService().scheduleNotification(
+          NotificationService.scheduleNotification(
               title: 'Scheduled Notification',
               body: '${DateFormat('hh:mm').format(scheduleTime)}',
               scheduleNotificationDateTime: scheduleTime);
