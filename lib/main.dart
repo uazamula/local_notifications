@@ -6,7 +6,7 @@ import 'package:push_notifications/services/notify_service.dart';
 
 DateTime scheduleTime = DateTime.now();
 
-Future main() async{
+Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   NotificationService.initNotification();
   tz.initializeTimeZones();
@@ -44,6 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    String dateTime = DateFormat('yyyy/MM/dd  hh:mm').format(scheduleTime);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -77,11 +78,28 @@ class _MyHomePageState extends State<MyHomePage> {
             SizedBox(height: 32),
             DatePickerTxt(),
             SizedBox(height: 16),
-            ScheduleBtn()
+            buildButton(context),
+            SizedBox(height: 16),
+            Text('Годинник встановлено на $dateTime')
           ],
         ),
       ),
     );
+  }
+
+  Widget buildButton(BuildContext context) {
+    return ElevatedButton(
+        onPressed: () {
+          if (scheduleTime.isAfter(DateTime.now())) {
+            debugPrint('Notification scheduled for $scheduleTime');
+            NotificationService.scheduleNotification(
+                title: 'Scheduled Notification',
+                body: '${DateFormat('hh:mm').format(scheduleTime)}',
+                scheduleNotificationDateTime: scheduleTime);
+            setState(() {});
+          }
+        },
+        child: Text('Schedule notification'));
   }
 }
 
@@ -107,19 +125,19 @@ class _DatePickerTxtState extends State<DatePickerTxt> {
   }
 }
 
-class ScheduleBtn extends StatelessWidget {
-  const ScheduleBtn({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-        onPressed: () {
-          debugPrint('Notification scheduled for $scheduleTime');
-          NotificationService.scheduleNotification(
-              title: 'Scheduled Notification',
-              body: '${DateFormat('hh:mm').format(scheduleTime)}',
-              scheduleNotificationDateTime: scheduleTime);
-        },
-        child: Text('Schedule notification'));
-  }
-}
+// class ScheduleBtn extends StatelessWidget {
+//   const ScheduleBtn({Key? key}) : super(key: key);
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return ElevatedButton(
+//         onPressed: () {
+//           debugPrint('Notification scheduled for $scheduleTime');
+//           NotificationService.scheduleNotification(
+//               title: 'Scheduled Notification',
+//               body: '${DateFormat('hh:mm').format(scheduleTime)}',
+//               scheduleNotificationDateTime: scheduleTime);
+//         },
+//         child: Text('Schedule notification'));
+//   }
+// }
