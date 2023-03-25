@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
+
 // https://stackoverflow.com/questions/71690143/flutter-push-notification-when-app-is-closed
 // https://stackoverflow.com/questions/69014546/flutter-local-notification-sound-not-working
 class NotificationService {
@@ -23,6 +24,7 @@ class NotificationService {
     await notificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse: (notificationResponse) async {});
   }
+
 //TODO comment in if you need it
   // Future showNotification({
   //   int id = 0,
@@ -37,10 +39,11 @@ class NotificationService {
   static notificationDetails() {
     return NotificationDetails(
       android: AndroidNotificationDetails(
-        'channelId13',
-        'channelName4',
+        // don't forget to change this value after you change other fields in this method
+        'channelIdnewuri',
+        'channelNamenewuri',
         playSound: true,
-        // sound: UriAndroidNotificationSound('assets/anthem.mp3'),
+        //sound: UriAndroidNotificationSound('assets/sound/anthem'),// doesn't work
         sound: RawResourceAndroidNotificationSound('anthem'),
         importance: Importance.max,
         priority: Priority.high,
@@ -57,11 +60,14 @@ class NotificationService {
     required DateTime scheduleNotificationDateTime,
   }) async {
     return notificationsPlugin.zonedSchedule(
-        id, title, body, tz.TZDateTime.from(scheduleNotificationDateTime, tz.local), await notificationDetails(),
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        androidAllowWhileIdle: true,
-       );
+      id,
+      title,
+      body,
+      tz.TZDateTime.from(scheduleNotificationDateTime, tz.local),
+      await notificationDetails(),
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      androidAllowWhileIdle: true,
+    );
   }
-
 }

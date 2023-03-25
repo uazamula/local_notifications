@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:push_notifications/services/notify_service.dart';
+import 'package:local_notifications/services/notify_service.dart';
 
 DateTime scheduleTime = DateTime.now();
 
