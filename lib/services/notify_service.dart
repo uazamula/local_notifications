@@ -1,14 +1,17 @@
+import 'dart:io';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 // https://stackoverflow.com/questions/71690143/flutter-push-notification-when-app-is-closed
 // https://stackoverflow.com/questions/69014546/flutter-local-notification-sound-not-working
 class NotificationService {
-  static final notificationsPlugin = FlutterLocalNotificationsPlugin();
+  static final flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   static Future<void> initNotification() async {
     var initializationSettingsAndroid =
-        const AndroidInitializationSettings('logo512circled');
+        const AndroidInitializationSettings('@drawable/ic_launcher');
     var initializationSettingsIOS = DarwinInitializationSettings(
         requestAlertPermission: true,
         requestBadgePermission: true,
@@ -21,7 +24,7 @@ class NotificationService {
         ) async {});
     var initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
-    await notificationsPlugin.initialize(initializationSettings,
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse: (notificationResponse) async {});
   }
 
@@ -40,8 +43,8 @@ class NotificationService {
     return NotificationDetails(
       android: AndroidNotificationDetails(
         // don't forget to change this value after you change other fields in this method
-        'channelIdnewuri',
-        'channelNamenewuri',
+        'ch_id_1',
+        'channelName',
         playSound: true,
         //sound: UriAndroidNotificationSound('assets/sound/anthem'),// doesn't work
         sound: RawResourceAndroidNotificationSound('anthem'),
@@ -53,14 +56,14 @@ class NotificationService {
   }
 
   static Future scheduleNotification({
-    int id = 0,
+    int? id,
     String? title,
     String? body,
     String? payload,
     required DateTime scheduleNotificationDateTime,
   }) async {
-    return notificationsPlugin.zonedSchedule(
-      id,
+    return flutterLocalNotificationsPlugin.zonedSchedule(
+      id!,
       title,
       body,
       tz.TZDateTime.from(scheduleNotificationDateTime, tz.local),
@@ -69,5 +72,39 @@ class NotificationService {
           UILocalNotificationDateInterpretation.absoluteTime,
       androidAllowWhileIdle: true,
     );
+  }
+
+  static Future<void> deleteNotification({int? id}) async {
+    await flutterLocalNotificationsPlugin.cancel(id!);
+  }
+
+  static bool? notificationsEnabled;
+
+  static Future<void> requestPermissions() async {
+    if (Platform.isIOS || Platform.isMacOS) {
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              MacOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+    } else if (Platform.isAndroid) {
+      final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+          flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+
+      final bool? granted = await androidImplementation?.requestPermission();
+      notificationsEnabled = granted ?? false;
+    }
   }
 }

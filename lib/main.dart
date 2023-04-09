@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:local_notifications/services/notify_service.dart';
-
+//for 33 API on Mac M1// https://stackoverflow.com/questions/73432326/failed-to-find-sync-for-id-0-in-flutter
 DateTime scheduleTime = DateTime.now();
+DateTime scheduleTime2 = DateTime.now();
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,7 +46,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    String dateTime = DateFormat('yyyy/MM/dd  hh:mm').format(scheduleTime);
+    String dateTime1 = DateFormat('yyyy/MM/dd  hh:mm').format(scheduleTime);
+    String dateTime2 = DateFormat('yyyy/MM/dd  hh:mm').format(scheduleTime2);
+    // NotificationService.notificationsPlugin.resolvePlatformSpecificImplementation<
+    //     AndroidFlutterLocalNotificationsPlugin>()?.requestPermission();
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -80,7 +85,18 @@ class _MyHomePageState extends State<MyHomePage> {
             SizedBox(height: 16),
             buildButton(context),
             SizedBox(height: 16),
-            Text('Годинник встановлено на $dateTime')
+            Text('Годинник встановлено на $dateTime1'),
+            Text('Годинник встановлено на $dateTime2'),
+            ElevatedButton(
+              onPressed: () {
+                NotificationService.deleteNotification(id: 1);
+              },
+              child: Text('Delete 1st notification'),
+            ),
+            ElevatedButton(
+              child: Text('Request permission (API 33+)'),
+              onPressed: () => NotificationService.requestPermissions(),
+            )
           ],
         ),
       ),
@@ -91,11 +107,17 @@ class _MyHomePageState extends State<MyHomePage> {
     return ElevatedButton(
         onPressed: () {
           if (scheduleTime.isAfter(DateTime.now())) {
-            debugPrint('Notification scheduled for $scheduleTime');
+            debugPrint('Notification scheduled for ${scheduleTime}');
             NotificationService.scheduleNotification(
-                title: 'Scheduled Notification',
+                id: 1,
+                title: 'Scheduled Notification1',
                 body: '${DateFormat('hh:mm').format(scheduleTime)}',
                 scheduleNotificationDateTime: scheduleTime);
+            NotificationService.scheduleNotification(
+                id: 2,
+                title: 'Scheduled Notification2',
+                body: '${DateFormat('hh:mm').format(scheduleTime2)}',
+                scheduleNotificationDateTime: scheduleTime2);
             setState(() {});
           }
         },
@@ -115,10 +137,11 @@ class _DatePickerTxtState extends State<DatePickerTxt> {
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: () {
-        DatePicker.showDateTimePicker(context,
-            showTitleActions: true,
-            onChanged: (date) => scheduleTime = date,
-            onConfirm: (date) {});
+        DatePicker.showDateTimePicker(context, showTitleActions: true,
+            onChanged: (date) {
+          scheduleTime = date;
+          scheduleTime2 = scheduleTime.add(Duration(minutes: 1));
+        }, onConfirm: (date) {});
       },
       child: Text('Select Date Time'),
     );
