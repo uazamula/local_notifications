@@ -1,9 +1,12 @@
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
+import 'package:local_notifications/services/sys_info.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:local_notifications/services/notify_service.dart';
+// https://stackoverflow.com/questions/45300661/how-to-check-the-device-os-version-from-flutter
 //for 33 API on Mac M1// https://stackoverflow.com/questions/73432326/failed-to-find-sync-for-id-0-in-flutter
 DateTime scheduleTime = DateTime.now();
 DateTime scheduleTime2 = DateTime.now();
@@ -12,6 +15,7 @@ Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   NotificationService.initNotification();
   tz.initializeTimeZones();
+  await SysInfo.getSdkInfo();
   runApp(const MyApp());
 }
 
@@ -44,12 +48,34 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  bool? notificationEnabled;
+
+  @override
+  void initState() {
+    super.initState();
+    areNotificationsEnabled();
+  }
+
+  Future<void> areNotificationsEnabled() async {
+    notificationEnabled = await NotificationService
+        .flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.areNotificationsEnabled();
+    if(!mounted) return;
+      setState(() { });
+
+  }
+
   @override
   Widget build(BuildContext context) {
     String dateTime1 = DateFormat('yyyy/MM/dd  hh:mm').format(scheduleTime);
     String dateTime2 = DateFormat('yyyy/MM/dd  hh:mm').format(scheduleTime2);
     // NotificationService.notificationsPlugin.resolvePlatformSpecificImplementation<
     //     AndroidFlutterLocalNotificationsPlugin>()?.requestPermission();
+    print('notification Enabled $notificationEnabled');
+    print('SDK = ${SysInfo.getSdkIntInfo}');
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -93,10 +119,21 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: Text('Delete 1st notification'),
             ),
-            ElevatedButton(
-              child: Text('Request permission (API 33+)'),
-              onPressed: () => NotificationService.requestPermissions(),
-            )
+
+            if ((notificationEnabled ?? true) /*|| [0,26,27,30,31,32].contains(SysInfo.getSdkIntInfo??0)*/)
+              const SizedBox(width: 0)
+            else if(SysInfo.getSdkIntInfo==33)
+              ElevatedButton(
+                child: Text('Request permission (API 33+)'),
+                onPressed: () async {
+                  notificationEnabled = await NotificationService.requestPermissions();
+                  print('notification Enabled in Button $notificationEnabled');
+
+                  setState(() {
+                  });
+                },
+              )
+            else Text('See Settings to change permissons for notifications')
           ],
         ),
       ),
